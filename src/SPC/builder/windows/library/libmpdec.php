@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SPC\builder\windows\library;
 
+use SPC\store\FileSystem;
+
 class libmpdec extends WindowsLibraryBase
 {
     public const NAME = 'libmpdec';
@@ -27,5 +29,13 @@ class libmpdec extends WindowsLibraryBase
             }
         }
         copy($makefile_dir . '\mpdecimal.h', BUILD_INCLUDE_PATH . '\mpdecimal.h');
+
+        // Disable dllimport for static linking: the header defaults to
+        // __declspec(dllimport) when _DLL is defined, idk if php builds with /MD
+        FileSystem::replaceFileStr(
+            BUILD_INCLUDE_PATH . '\mpdecimal.h',
+            '#elif defined(_DLL)',
+            '#elif 0'
+        );
     }
 }
