@@ -11,6 +11,8 @@ use SPC\exception\ValidationException;
 use SPC\exception\WrongUsageException;
 use SPC\store\Config;
 use SPC\store\FileSystem;
+use SPC\toolchain\ToolchainManager;
+use SPC\toolchain\ZigToolchain;
 use SPC\util\SPCConfigUtil;
 use SPC\util\SPCTarget;
 
@@ -231,7 +233,8 @@ class Extension
         if (preg_match('/^(.*_SHARED_LIBADD\s*=\s*)(.*)$/m', $makefileContent, $matches)) {
             $prefix = $matches[1];
             $currentLibs = trim($matches[2]);
-            $newLibs = trim("{$currentLibs} {$staticLibs} {$lstdcpp}");
+            $lzig = ToolchainManager::getToolchainClass() === ZigToolchain::class ? '-lcompiler_rt -lunwind' : '';
+            $newLibs = clean_spaces("{$currentLibs} {$staticLibs} {$lstdcpp} {$lzig}");
             $deduplicatedLibs = deduplicate_flags($newLibs);
 
             FileSystem::replaceFileRegex(
